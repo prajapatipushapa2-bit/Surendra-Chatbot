@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Surendra Chatbot</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f2f5f9;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-container {
+      width: 95%;
+      max-width: 500px;
+      height: 90vh;
+      background: white;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: #111827;
+      color: white;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 23px;
+    }
+
+    .header p {
+      font-size: 13px;
+      margin-top: 5px;
+      opacity: 0.8;
+    }
+
+    #chatBox {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f8fafc;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 11px 14px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .user {
+      background: #2563eb;
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 3px;
+    }
+
+    .bot {
+      background: #e5e7eb;
+      color: #111827;
+      margin-right: auto;
+      border-bottom-left-radius: 3px;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      background: white;
+      gap: 8px;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    #sendBtn {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 0 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    #sendBtn:hover {
+      background: #1d4ed8;
+    }
+
+    .typing {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="chat-container">
+
+    <div class="header">
+      <h1>🤖 Surendra Chatbot</h1>
+      <p>Powered by Grok API</p>
+    </div>
+
+    <div id="chatBox">
+      <div class="message bot">
+        नमस्ते! 👋 मैं Surendra Chatbot हूँ।<br>
+        आप मुझसे कोई भी सवाल पूछ सकते हैं।
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input
+        type="text"
+        id="userInput"
+        placeholder="अपना सवाल लिखें..."
+        autocomplete="off"
+      >
+
+      <button id="sendBtn">Send</button>
+    </div>
+
+  </div>
+
+<script>
+
+  // ==========================================
+  // अपना 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 यहां डालें
+  // ==========================================
+
+  const API_KEY = "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";
+
+  // Grok API endpoint
+  const API_URL = "https://api.x.ai/v1/chat/completions";
+
+
+  const chatBox = document.getElementById("chatBox");
+  const userInput = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+
+  function addMessage(text, type) {
+
+    const message = document.createElement("div");
+
+    message.classList.add("message", type);
+
+    // Basic text output
+    message.textContent = text;
+
+    chatBox.appendChild(message);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+
+  async function sendMessage() {
+
+    const question = userInput.value.trim();
+
+    if (!question) {
+      return;
+    }
+
+    // User message
+    addMessage(question, "user");
+
+    userInput.value = "";
+
+    // Typing indicator
+    const typing = document.createElement("div");
+
+    typing.classList.add("typing");
+    typing.textContent = "Surendra Chatbot सोच रहा है...";
+
+    chatBox.appendChild(typing);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+
+    try {
+
+      const response = await fetch(API_URL, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${API_KEY}`
+        },
+
+        body: JSON.stringify({
+
+          model: "grok-3-mini",
+
+          messages: [
+
+            {
+              role: "system",
+              content:
+                "You are Surendra Chatbot. Answer clearly, helpfully and preferably in Hindi when the user asks in Hindi."
+            },
+
+            {
+              role: "user",
+              content: question
+            }
+
+          ],
+
+          temperature: 0.7
+
+        })
+
+      });
+
+
+      const data = await response.json();
+
+      typing.remove();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data?.error?.message || "API request failed"
+        );
+
+      }
+
+
+      const answer =
+        data?.choices?.[0]?.message?.content ||
+        "माफ कीजिए, मुझे कोई उत्तर नहीं मिला।";
+
+
+      addMessage(answer, "bot");
+
+
+    } catch (error) {
+
+      typing.remove();
+
+      addMessage(
+        "❌ Error: " + error.message,
+        "bot"
+      );
+
+      console.error(error);
+    }
+
+  }
+
+
+  // Send button
+  sendBtn.addEventListener("click", sendMessage);
+
+
+  // Enter key
+  userInput.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+
+  });
+
+</script>
+
+</body>
+</html>
